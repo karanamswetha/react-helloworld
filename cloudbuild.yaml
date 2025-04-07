@@ -9,39 +9,16 @@ steps:
     entrypoint: 'npm'
     args: ['run', 'build']
 
-  # Step 3: Wait for approval if on release branch
-  - name: 'gcr.io/cloud-builders/gcloud'
-    id: 'Wait for approval (if needed)'
-    entrypoint: bash
-    args:
-      - -c
-      - |
-        echo "Branch: $BRANCH_NAME"
-        if [[ "$BRANCH_NAME" == "release" ]]; then
-          echo "Waiting for manual approval..."
-          gcloud builds wait-for-approval
-        else
-          echo "No approval required for $BRANCH_NAME"
-        fi
-
-  # Step 4: Deploy to Cloud Storage
+  # Step 3: Deploy to different Google Cloud Storage buckets based on branch
   - name: 'gcr.io/cloud-builders/gsutil'
-    id: 'Deploy to Cloud Storage'
-    entrypoint: bash
+    entrypoint: 'bash'
     args:
-      - -c
+      - '-c'
       - |
-        if [[ "$BRANCH_NAME" == "develop" ]]; then
-          TARGET_BUCKET="gs://caitcustomerappdevelop/"
-        elif [[ "$BRANCH_NAME" == "release" ]]; then
-          TARGET_BUCKET="gs://caitcustomerappuat/"
-        else
-          echo "This branch is not configured for deployment."
-          exit 0
+        if [[ "$BRANCH_NAME" == "main" ]]; then
+          gsutil -m cp -r build/* gs://caitcustomerappdevelop/
+        elif [[ "$BRANCH_NAME" == "develop" ]]; then
+          gsutil -m cp -r build/* gs://caitcustomerappuat/
         fi
-
-        echo "Deploying to $TARGET_BUCKET"
-        gsutil -m cp -r ./dist/* "$TARGET_BUCKET"
-
 options:
   logging: CLOUD_LOGGING_ONLY
