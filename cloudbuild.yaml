@@ -33,9 +33,9 @@ steps:
       - |
         echo "Branch: $BRANCH_NAME"
         if [[ "$BRANCH_NAME" == "develop" ]]; then
-          TARGET_BUCKET="gs://caitcustomerappdevelop"
+          TARGET_BUCKET="gs://caitcustomerappdevelop/"
         elif [[ "$BRANCH_NAME" == "release" ]]; then
-          TARGET_BUCKET="gs://caitcustomerappuat"
+          TARGET_BUCKET="gs://caitcustomerappuat/"
         else
           echo "This branch is not configured for deployment."
           exit 0
