@@ -41,6 +41,7 @@ steps:
 
         echo "Deploying to $BUCKET"
         gsutil -m cp -r ./dist/* $BUCKET
+
         
         options:
   logging: CLOUD_LOGGING_ONLY
