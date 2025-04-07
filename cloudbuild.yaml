@@ -31,6 +31,7 @@ steps:
     args:
       - -c
       - |
+        echo "Branch: $BRANCH_NAME"
         if [[ "$BRANCH_NAME" == "develop" ]]; then
           BUCKET="gs://caitcustomerappdevelop"
         elif [[ "$BRANCH_NAME" == "release" ]]; then
@@ -41,7 +42,8 @@ steps:
         fi
 
         echo "Deploying to $BUCKET"
-        gsutil -m cp -r ./dist/* $BUCKET
+        gsutil -m cp -r ./dist/* "$BUCKET"
 
 options:
   logging: CLOUD_LOGGING_ONLY
+
