@@ -1,9 +1,47 @@
 steps:
-- name: 'gcr.io/cloud-builders/npm'
-  args: ['install']
+  # Step 1: Install dependencies
+  - name: 'node:18'
+    entrypoint: 'npm'
+    args: ['install']
 
-- name: 'gcr.io/cloud-builders/npm'
-  args: ['run', 'build']
+  # Step 2: Build the React app
+  - name: 'node:18'
+    entrypoint: 'npm'
+    args: ['run', 'build']
 
-- name: 'gcr.io/cloud-builders/gsutil'
-  args: ['-m', 'rsync', '-R', 'build/', 'gs://<your-bucket-name>']
+  # Step 3: Deploy to different Google Cloud Storage buckets based on branch
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'Wait for approval (if needed)'
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        echo "Branch: $BRANCH_NAME"
+        if [[ "$BRANCH_NAME" == "release" ]]; then
+          echo "Waiting for manual approval..."
+          gcloud builds wait-for-approval
+        else
+          echo "No approval required for $BRANCH_NAME"
+        fi
+
+  - name: 'gcr.io/cloud-builders/gsutil'
+    id: 'Deploy to Cloud Storage'
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        if [[ "$BRANCH_NAME" == "develop" ]]; then
+          BUCKET="gs://caitcustomerappdevelop"
+        elif [[ "$BRANCH_NAME" == "release" ]]; then
+          BUCKET="gs://caitcustomerappuat"
+        else
+          echo "This branch is not configured for deployment."
+          exit 0
+        fi
+
+        echo "Deploying to $BUCKET"
+        gsutil -m cp -r ./dist/* $BUCKET
+
+        options:
+  logging: CLOUD_LOGGING_ONLY
+
