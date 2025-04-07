@@ -9,7 +9,7 @@ steps:
     entrypoint: 'npm'
     args: ['run', 'build']
 
-  # Step 3: Deploy to different Google Cloud Storage buckets based on branch
+  # Step 3: Wait for approval if on release branch
   - name: 'gcr.io/cloud-builders/gcloud'
     id: 'Wait for approval (if needed)'
     entrypoint: bash
@@ -24,6 +24,7 @@ steps:
           echo "No approval required for $BRANCH_NAME"
         fi
 
+  # Step 4: Deploy to Cloud Storage
   - name: 'gcr.io/cloud-builders/gsutil'
     id: 'Deploy to Cloud Storage'
     entrypoint: bash
@@ -42,7 +43,5 @@ steps:
         echo "Deploying to $BUCKET"
         gsutil -m cp -r ./dist/* $BUCKET
 
-        
-      - options:
+options:
   logging: CLOUD_LOGGING_ONLY
-
