@@ -24,14 +24,13 @@ steps:
           echo "No approval required for $BRANCH_NAME"
         fi
 
- # Step 4: Deploy to Cloud Storage
+  # Step 4: Deploy to Cloud Storage
   - name: 'gcr.io/cloud-builders/gsutil'
     id: 'Deploy to Cloud Storage'
     entrypoint: bash
     args:
       - -c
       - |
-        echo "Branch: $BRANCH_NAME"
         if [[ "$BRANCH_NAME" == "develop" ]]; then
           TARGET_BUCKET="gs://caitcustomerappdevelop/"
         elif [[ "$BRANCH_NAME" == "release" ]]; then
@@ -46,5 +45,3 @@ steps:
 
 options:
   logging: CLOUD_LOGGING_ONLY
-  
-
