@@ -1,4 +1,5 @@
-apiVersion: deploy.cloud.google.com/v1
+
+ apiVersion: deploy.cloud.google.com/v1
 kind: DeliveryPipeline
 metadata:
   name: react-app-pipeline
@@ -13,6 +14,7 @@ serialPipeline:
       strategy:
         standard:
           predeploy:
+            actions: []
             approval: true
 ---
 apiVersion: deploy.cloud.google.com/v1
@@ -31,3 +33,4 @@ metadata:
 description: UAT environment
 gcs:
   location: gs://caitcustomerappuat
+
