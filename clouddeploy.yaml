@@ -31,4 +31,3 @@ metadata:
 description: UAT environment
 gcs:
   location: gs://caitcustomerappuat
-
