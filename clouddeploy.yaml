@@ -1,8 +1,8 @@
 apiVersion: deploy.cloud.google.com/v1
 kind: DeliveryPipeline
 metadata:
-  name: customerapp-pipeline
-description: "Pipeline for Customer React App"
+  name: react-app-pipeline
+description: React app deployment pipeline
 
 serialPipeline:
   stages:
@@ -10,13 +10,16 @@ serialPipeline:
       profiles: [dev]
     - targetId: uat
       profiles: [uat]
-      approvalRequired: true
+      strategy:
+        standard:
+          predeploy:
+            approval: true
 ---
 apiVersion: deploy.cloud.google.com/v1
 kind: Target
 metadata:
   name: dev
-description: "Development environment"
+description: Development environment
 gcs:
   location: gs://caitcustomerappdevelop
 
@@ -25,6 +28,7 @@ apiVersion: deploy.cloud.google.com/v1
 kind: Target
 metadata:
   name: uat
-description: "UAT/Release environment"
+description: UAT environment
 gcs:
   location: gs://caitcustomerappuat
+
