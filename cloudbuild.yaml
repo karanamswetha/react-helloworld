@@ -1,3 +1,6 @@
+substitutions:
+  _REGION: us-central1
+
 steps:
   # Step 1: Install dependencies
   - name: 'node:18'
@@ -9,16 +12,37 @@ steps:
     entrypoint: 'npm'
     args: ['run', 'build']
 
-  # Step 3: Deploy to different Google Cloud Storage buckets based on branch
+  # Step 3: Copy build artifacts to output directory for Cloud Deploy
   - name: 'gcr.io/cloud-builders/gsutil'
     entrypoint: 'bash'
     args:
-      - '-c'
+      - -c
       - |
-        if [[ "$BRANCH_NAME" == "main" ]]; then
-          gsutil -m cp -r build/* gs://caitcustomerappdevelop/
-        elif [[ "$BRANCH_NAME" == "develop" ]]; then
-          gsutil -m cp -r build/* gs://caitcustomerappuat/
+        mkdir -p deploy-output
+        cp -r build/* deploy-output/
+
+  # Step 4: Trigger Cloud Deploy release
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'bash'
+    args:
+      - -c
+      - |
+        if [[ "$BRANCH_NAME" == "develop" ]]; then
+          TARGET="dev"
+        elif [[ "$BRANCH_NAME" == "release" ]]; then
+          TARGET="uat"
+        else
+          echo "No deployment target configured for this branch: $BRANCH_NAME"
+          exit 0
         fi
-options:
-  logging: CLOUD_LOGGING_ONLY
+
+        gcloud deploy releases create release-$SHORT_SHA \
+          --delivery-pipeline=customerapp-pipeline \
+          --region=$_REGION \
+          --source=. \
+          --to-target=$TARGET \
+          --labels=branch=$BRANCH_NAME
+
+artifacts:
+  files:
+    - deploy-output/**
